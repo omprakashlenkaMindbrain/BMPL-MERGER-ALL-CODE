@@ -11,15 +11,22 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 
 import EditProfileInfo from "../components/profile/EditProfileInfo";
 import EditAddressInfo from "../components/profile/EditAddressInfo";
+import { useGetAdmin } from "../hooks/Admin/useGetAdmin"; // import your hook
 
 const ProfilePage: React.FC = () => {
   const [openProfileEdit, setOpenProfileEdit] = useState(false);
   const [openAddressEdit, setOpenAddressEdit] = useState(false);
+
+  // Fetch admin data
+  const { data: adminData, isLoading } = useGetAdmin();
+
+  const admin = adminData?.Admin; // Extract Admin object
 
   return (
     <Box sx={{ p: 3, backgroundColor: "#FFFFFF", minHeight: "100vh" }}>
@@ -32,15 +39,23 @@ const ProfilePage: React.FC = () => {
       <Paper sx={{ p: 3, borderRadius: 2, mb: 3 }}>
         <Box display="flex" alignItems="center" gap={2}>
           <Avatar
-            src="https://i.pravatar.cc/100"
-            alt="Moni Roy"
+            src={admin ? `https://i.pravatar.cc/100?u=${admin.id}` : ""}
+            alt={admin ? `${admin.firstName} ${admin.lastName}` : "Admin"}
             sx={{ width: 56, height: 56 }}
           />
           <Box>
-            <Typography fontWeight={600}>Moni Roy</Typography>
-            <Typography fontSize={13} color="text.secondary">
-              Admin
-            </Typography>
+            {isLoading ? (
+              <CircularProgress size={16} />
+            ) : (
+              <>
+                <Typography fontWeight={600}>
+                  {admin ? `${admin.firstName} ${admin.lastName}` : "Admin User"}
+                </Typography>
+                <Typography fontSize={13} color="text.secondary">
+                  {admin?.adminType || "Admin"}
+                </Typography>
+              </>
+            )}
           </Box>
         </Box>
       </Paper>
@@ -75,21 +90,21 @@ const ProfilePage: React.FC = () => {
               <Typography fontSize={12} color="#26619A">
                 First Name
               </Typography>
-              <Typography fontWeight={500}>Moni</Typography>
+              <Typography fontWeight={500}>{admin?.firstName || "-"}</Typography>
             </Box>
 
             <Box>
               <Typography fontSize={12} color="#26619A">
                 Email Address
               </Typography>
-              <Typography fontWeight={500}>moniroy123@gmail.com</Typography>
+              <Typography fontWeight={500}>{admin?.email || "-"}</Typography>
             </Box>
 
             <Box>
               <Typography fontSize={12} color="#26619A">
                 Bio
               </Typography>
-              <Typography fontWeight={500}>Admin</Typography>
+              <Typography fontWeight={500}>{admin?.adminType || "-"}</Typography>
             </Box>
           </Box>
 
@@ -98,14 +113,14 @@ const ProfilePage: React.FC = () => {
               <Typography fontSize={12} color="#26619A">
                 Last Name
               </Typography>
-              <Typography fontWeight={500}>Roy</Typography>
+              <Typography fontWeight={500}>{admin?.lastName || "-"}</Typography>
             </Box>
 
             <Box>
               <Typography fontSize={12} color="#26619A">
                 Phone
               </Typography>
-              <Typography fontWeight={500}>+09 363 398 46</Typography>
+              <Typography fontWeight={500}>{admin?.mobile || "-"}</Typography>
             </Box>
           </Box>
         </Box>

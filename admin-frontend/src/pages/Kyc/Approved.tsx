@@ -30,14 +30,16 @@ interface ApprovedKyc {
 }
 
 const Approved = () => {
-  const [page, setPage] = useState(0); // MUI page (0-based)
+  const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Backend expects 1-based page
   const { data, isLoading } = useApprovedKyc(page + 1, rowsPerPage);
 
+
   const approvedUsers: ApprovedKyc[] = data?.data ?? [];
-  const total = data?.total ?? 0;
+  const total = data?.pagination?.total ?? 0;
+
 
   return (
     <Box p={4}>

@@ -23,6 +23,7 @@ import RoyalityComission from "./pages/Setting-Config/RoyalityComission";
 import UserConfig from "./pages/Setting-Config/UserConfig";
 import UsersPage from "./pages/UsersPage";
 import Rewards from "./pages/Rewards/Rewards";
+import { Toaster } from "sonner"
 
 function App() {
   return (
@@ -78,6 +79,7 @@ function App() {
           {/* Catch all - redirect to dashboard */}
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        <Toaster position="top-right" />
       </BrowserRouter>
     </>
   );

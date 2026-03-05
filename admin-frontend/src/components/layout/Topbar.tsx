@@ -6,6 +6,7 @@ import {
   AppBar,
   Avatar,
   Box,
+  CircularProgress,
   InputBase,
   ListItemIcon,
   Menu,
@@ -16,25 +17,30 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
+import { useGetAdmin } from "../../hooks/Admin/useGetAdmin"; // <-- import your hook
 import { useLogout } from "../../hooks/Auth/useLogout";
 
 const Topbar = () => {
   const [langMenu, setLangMenu] = useState<null | HTMLElement>(null);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
-  const { user } = useAuth();
+  const { mutate: logoutMutate } = useLogout();
   const navigate = useNavigate();
 
-  // rename to avoid conflict
-  const { mutate: logoutMutate } = useLogout();
+  // fetch admin
+  const { data: adminData, isLoading } = useGetAdmin();
+  console.log(adminData);
+
 
   const handleLogout = () => {
     logoutMutate({}, {
       onSuccess: () => {
         setUserMenu(null);
-        navigate("/login"); // redirect after logout
+        toast.success("Logout Successful");
+        navigate("/login");
       },
       onError: (error: any) => {
+        toast.error("Logout error: " + error.message);
         console.error("Logout error:", error.message);
       },
     });
@@ -94,10 +100,14 @@ const Topbar = () => {
             sx={{ width: 40, height: 40 }}
           />
           <Box sx={{ ml: 1 }}>
-            <Typography sx={{ fontWeight: 600 }}>
-              {user?.name || "Admin User"}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: "#7a7f85" }}>Admin</Typography>
+            {isLoading ? (
+              <CircularProgress size={16} />
+            ) : (
+              <Typography sx={{ fontWeight: 600 }}>
+                {adminData?.Admin.firstName || "Admin User"} {adminData?.Admin.lastName}
+              </Typography>
+            )}
+            <Typography sx={{ fontSize: 12, color: "#7a7f85" }}>{adminData?.Admin.adminType}</Typography>
           </Box>
           <KeyboardArrowDownIcon sx={{ ml: 1 }} />
         </Box>

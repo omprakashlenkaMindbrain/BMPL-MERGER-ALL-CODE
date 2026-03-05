@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/BMPL 1.png";
 import { useLogin } from "../hooks/Auth/useAuth";
+import { toast } from "sonner";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,6 +37,7 @@ const LoginPage = () => {
 
     if (!username || !password) {
       setError("Please enter both username and password");
+      toast.error("All Fields Required");
       return;
     }
 
@@ -44,9 +46,11 @@ const LoginPage = () => {
 
       // Navigate to dashboard directly
       navigate("/dashboard");
+      toast.success("Login Successfull");
     } catch (err: any) {
       setError(err.message || "Login failed. Please check your credentials.");
       console.error("Login error:", err);
+      toast.error("Login error");
     }
   };
 

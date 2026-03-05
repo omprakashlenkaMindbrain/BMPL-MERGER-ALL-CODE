@@ -6,6 +6,7 @@ import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
+import Chip from "@mui/material/Chip";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -14,13 +15,12 @@ import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
 
 /* ───── ICONS ───── */
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 /* ───── API HOOKS ───── */
 import { useCreatePlan } from "../../hooks/Plan/useCreatePlan";
@@ -28,6 +28,7 @@ import { useDeletePlan } from "../../hooks/Plan/useDeletePlan";
 import { usePlans } from "../../hooks/Plan/usePlans";
 import { useUpdatePlan } from "../../hooks/Plan/useUpdatePlan";
 
+import { toast } from "sonner";
 import type { Plan } from "../../types/plans";
 
 /* ───────────────── MODAL ───────────────── */
@@ -96,7 +97,7 @@ function PackageModal({ open, onClose, selectedPlan }: PackageModalProps) {
 
   const handleSubmit = async () => {
     if (!planName.trim()) {
-      alert("Package name is required");
+      toast.error("Package name is required");
       return;
     }
 
@@ -121,7 +122,7 @@ function PackageModal({ open, onClose, selectedPlan }: PackageModalProps) {
       resetForm();
       onClose();
     } catch (err: any) {
-      alert(err?.message || "Operation failed");
+      toast.error(err?.message || "Operation failed")
     }
   };
 
@@ -226,9 +227,23 @@ export default function AgentPackages() {
     ? data
     : data?.plans ?? data?.plan ?? [];
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this plan?")) return;
-    await deleteMutation.mutateAsync(id);
+  const handleDelete = (id: string) => {
+    toast("Are you sure you want to delete this plan?", {
+      action: {
+        label: "Delete",
+        onClick: () => {
+          toast.promise(deleteMutation.mutateAsync(id), {
+            loading: "Deleting plan...",
+            success: "Plan deleted successfully",
+            error: "Failed to delete plan",
+          });
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => console.log("Cancelled"),
+      },
+    });
   };
 
   return (

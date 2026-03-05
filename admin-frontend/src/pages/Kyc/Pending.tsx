@@ -26,6 +26,7 @@ import { useState } from "react";
 // Import your existing hooks
 import { usePendingKyc } from "../../hooks/Kyc/usePendingKyc";
 import { useUpdateKycStatus } from "../../hooks/Kyc/useUpdateKycStatus";
+import { toast } from "sonner";
 
 
 export default function Pending() {
@@ -51,6 +52,7 @@ export default function Pending() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["pendingKyc", page + 1, rowsPerPage] });
+          toast.success("KYC approved");
         },
       }
     );
@@ -64,6 +66,7 @@ export default function Pending() {
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["pendingKyc", page + 1, rowsPerPage] });
+          toast.success("KYC rejected");
         },
       }
     );

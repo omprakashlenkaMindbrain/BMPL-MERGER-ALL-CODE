@@ -2,7 +2,6 @@ import AddIcon from "@mui/icons-material/Add"; // ← added for + icon
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import {
-  Alert,
   Avatar,
   Box,
   Button,
@@ -29,6 +28,7 @@ import { useDeleteAdmin } from "../hooks/Admin/useDeleteAdmin";
 import { useGetAdmin } from "../hooks/Admin/useGetAdmin";
 import { useUpdateAdmin } from "../hooks/Admin/useUpdateAdmin";
 
+import { toast } from "sonner";
 import AdminRegisterModal from "../components/admin/AdminRegisterModal";
 import type { Admin, AdminFormInput } from "../types/admin";
 
@@ -87,6 +87,7 @@ const AdminPage = () => {
             status: formData.status,
           },
         });
+        toast.success("Updated Successfully");
       } else {
         // Create
         await createAdmin.mutateAsync({
@@ -99,10 +100,12 @@ const AdminPage = () => {
           adminType: formData.adminType,
           status: formData.status || "1",
         });
+        toast.success("Admin created");
       }
       handleCloseModal();
     } catch (err: any) {
-      alert("Failed to save admin: " + (err?.message || "Unknown error"));
+      // alert("Failed to save admin: " + (err?.message || "Unknown error"));
+      toast.error("Failed to save admin: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -115,9 +118,11 @@ const AdminPage = () => {
     if (!adminToDelete) return;
     try {
       await deleteAdmin.mutateAsync(adminToDelete.id);
-      alert("Admin deleted successfully"); // can be replaced with toast later
+      // alert("Admin deleted successfully"); // can be replaced with toast later
+      toast.success("Admin deleted successfully");
     } catch (err: any) {
-      alert("Delete failed: " + (err?.message || "Unknown error"));
+      // alert("Delete failed: " + (err?.message || "Unknown error"));
+      toast.error("Delete failed: " + (err?.message || "Unknown error"));
     } finally {
       setDeleteDialogOpen(false);
       setAdminToDelete(null);
@@ -135,9 +140,7 @@ const AdminPage = () => {
   if (error) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity="error">
-          Failed to load admins: {(error as Error)?.message || "Unknown error"}
-        </Alert>
+        {toast.error("Failed to load admins")}
       </Box>
     );
   }
