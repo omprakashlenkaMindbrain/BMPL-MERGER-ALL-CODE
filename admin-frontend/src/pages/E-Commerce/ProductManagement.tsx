@@ -1,347 +1,539 @@
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  MenuItem,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
+
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ImageIcon from "@mui/icons-material/Image";
-import {
-    Avatar,
-    Box,
-    Button,
-    Card,
-    CardContent,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    MenuItem,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    TextField,
-    Typography,
-} from "@mui/material";
-import React, { useState } from "react";
+import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+
+import { useState } from "react";
 
 /* ================= TYPES ================= */
 
 interface Product {
   id: number;
   name: string;
-  price: number;
+  sku: string;
   category: string;
-  image?: string;
-}
-
-interface ProductForm {
-  name: string;
-  price: string;
-  category: string;
-  imageFile: File | null;
-  imagePreview: string;
+  dp: number;
+  mrp: number;
+  stock: number;
+  bv: number;
+  status: "Active" | "Inactive";
+  description: string;
+  images: string[];
 }
 
 /* ================= COMPONENT ================= */
 
-const ProductManagement: React.FC = () => {
-  const [categories, setCategories] = useState<string[]>([
-    "Electronics",
-    "Clothing",
-  ]);
+export default function ProductManagement() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [openForm, setOpenForm] = useState(false);
+  const [openView, setOpenView] = useState(false);
 
-  const [categoryName, setCategoryName] = useState("");
-  const [product, setProduct] = useState<ProductForm>({
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [imageIndex, setImageIndex] = useState(0);
+
+  const [form, setForm] = useState<any>({
     name: "",
-    price: "",
+    sku: "",
     category: "",
-    imageFile: null,
-    imagePreview: "",
+    dp: "",
+    mrp: "",
+    stock: "",
+    bv: "",
+    description: "",
+    status: "Active",
+    images: [],
   });
 
-  const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
-  const [openProductDialog, setOpenProductDialog] = useState(false);
+  /* ================= IMAGE UPLOAD ================= */
 
-  /* ================= CATEGORY ================= */
+  const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-  const addCategory = () => {
-    if (!categoryName.trim()) return;
-    if (categories.includes(categoryName.trim())) return;
+    const newImages = Array.from(files).map((file) =>
+      URL.createObjectURL(file)
+    );
 
-    setCategories((prev) => [...prev, categoryName.trim()]);
-    setCategoryName("");
-    setOpenCategoryDialog(false);
-  };
-
-  const deleteCategory = (cat: string) => {
-    setCategories((prev) => prev.filter((c) => c !== cat));
-    setProducts((prev) => prev.filter((p) => p.category !== cat));
-  };
-
-  /* ================= PRODUCT ================= */
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setProduct((prev) => ({
+    setForm((prev: any) => ({
       ...prev,
-      imageFile: file,
-      imagePreview: URL.createObjectURL(file),
+      images: [...prev.images, ...newImages],
     }));
   };
 
-  const addProduct = () => {
-    if (!product.name || !product.price || !product.category) return;
+  /* ================= SAVE PRODUCT ================= */
 
-    setProducts((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name: product.name,
-        price: Number(product.price),
-        category: product.category,
-        image: product.imagePreview,
-      },
-    ]);
+  const saveProduct = () => {
+    const newProduct: Product = {
+      id: editingId ?? Date.now(),
+      name: form.name,
+      sku: form.sku,
+      category: form.category,
+      dp: Number(form.dp),
+      mrp: Number(form.mrp),
+      stock: Number(form.stock),
+      bv: Number(form.bv),
+      status: form.status,
+      description: form.description,
+      images: form.images,
+    };
 
-    setProduct({
-      name: "",
-      price: "",
-      category: "",
-      imageFile: null,
-      imagePreview: "",
-    });
+    if (editingId) {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === editingId ? newProduct : p))
+      );
+    } else {
+      setProducts((prev) => [...prev, newProduct]);
+    }
 
-    setOpenProductDialog(false);
+    resetForm();
   };
+
+  /* ================= EDIT ================= */
+
+  const editProduct = (p: Product) => {
+    setEditingId(p.id);
+    setForm({ ...p });
+    setOpenForm(true);
+  };
+
+  /* ================= VIEW ================= */
+
+  const viewProduct = (p: Product) => {
+    setSelectedProduct(p);
+    setImageIndex(0);
+    setOpenView(true);
+  };
+
+  /* ================= DELETE ================= */
 
   const deleteProduct = (id: number) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  /* ================= RESET ================= */
+
+  const resetForm = () => {
+    setForm({
+      name: "",
+      sku: "",
+      category: "",
+      dp: "",
+      mrp: "",
+      stock: "",
+      bv: "",
+      description: "",
+      status: "Active",
+      images: [],
+    });
+
+    setEditingId(null);
+    setOpenForm(false);
   };
 
   /* ================= UI ================= */
 
   return (
     <Box p={3}>
-      <Typography variant="h4" fontWeight={600} mb={1}>
+      <Typography variant="h4" fontWeight={600} mb={3}>
         Product Management
       </Typography>
-      <Typography color="text.secondary" mb={4}>
-        Manage categories and products
-      </Typography>
 
-      {/* ACTION BUTTONS */}
-      <Stack direction="row" spacing={2} mb={4}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenCategoryDialog(true)}
-        >
-          Add Category
-        </Button>
+      {/* ================= TABLE ================= */}
 
-        <Button
-          variant="outlined"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenProductDialog(true)}
-        >
-          Add Product
-        </Button>
-      </Stack>
-
-      {/* CATEGORY MANAGEMENT */}
-      <Card sx={{ mb: 4 }}>
+      <Card sx={{ borderRadius: 3 }}>
         <CardContent>
-          <Typography variant="h6" mb={2}>
-            Categories
-          </Typography>
 
-          <Stack direction="row" spacing={2} flexWrap="wrap">
-            {categories.map((cat) => (
-              <Stack
-                key={cat}
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                sx={{
-                  px: 2,
-                  py: 1,
-                  borderRadius: 2,
-                  border: "1px solid #e0e0e0",
-                }}
-              >
-                <Typography fontWeight={500}>{cat}</Typography>
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => deleteCategory(cat)}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              </Stack>
-            ))}
+          {/* HEADER */}
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h6">Products</Typography>
+
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenForm(true)}
+            >
+              Add Product
+            </Button>
           </Stack>
-        </CardContent>
-      </Card>
 
-      {/* PRODUCT MANAGEMENT */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" mb={2}>
-            Products
-          </Typography>
+          {/* TABLE */}
 
           <Table>
+
             <TableHead>
-              <TableRow>
-                <TableCell>Image</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Category</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell align="right">Action</TableCell>
+              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>SKU</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>DP</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>MRP</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>BV</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600 }}>
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
               {products.map((p) => (
                 <TableRow key={p.id} hover>
+
+                  {/* PRODUCT */}
+
                   <TableCell>
-                    <Avatar
-                      variant="rounded"
-                      src={p.image}
-                      sx={{ width: 48, height: 48 }}
-                    >
-                      <ImageIcon />
-                    </Avatar>
+                    <Stack alignItems="center" spacing={1}>
+                      <Avatar
+                        src={p.images[0]}
+                        variant="rounded"
+                        sx={{ width: 48, height: 48 }}
+                      />
+                      <Typography fontSize={13} fontWeight={500}>
+                        {p.name}
+                      </Typography>
+                    </Stack>
                   </TableCell>
-                  <TableCell>{p.name}</TableCell>
+
+                  <TableCell>{p.sku}</TableCell>
                   <TableCell>{p.category}</TableCell>
-                  <TableCell>₹ {p.price}</TableCell>
-                  <TableCell align="right">
+                  <TableCell>₹ {p.dp}</TableCell>
+                  <TableCell>₹ {p.mrp}</TableCell>
+                  <TableCell>{p.stock}</TableCell>
+                  <TableCell>{p.bv}%</TableCell>
+
+                  <TableCell>
+                    <Chip
+                      label={p.status}
+                      color={p.status === "Active" ? "success" : "default"}
+                      size="small"
+                    />
+                  </TableCell>
+
+                  <TableCell align="center">
+
+                    <IconButton onClick={() => viewProduct(p)}>
+                      <VisibilityIcon />
+                    </IconButton>
+
+                    <IconButton onClick={() => editProduct(p)}>
+                      <EditIcon />
+                    </IconButton>
+
                     <IconButton
                       color="error"
                       onClick={() => deleteProduct(p.id)}
                     >
                       <DeleteIcon />
                     </IconButton>
+
                   </TableCell>
+
                 </TableRow>
               ))}
             </TableBody>
+
           </Table>
+
         </CardContent>
       </Card>
 
-      {/* ADD CATEGORY MODAL */}
-      <Dialog
-        open={openCategoryDialog}
-        onClose={() => setOpenCategoryDialog(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Add New Category</DialogTitle>
-        <DialogContent>
-          <Typography color="text.secondary" mb={2}>
-            Categories help organize products
-          </Typography>
-          <TextField
-            label="Category Name"
-            fullWidth
-            value={categoryName}
-            onChange={(e) => setCategoryName(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenCategoryDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={addCategory}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* ================= ADD / EDIT PRODUCT ================= */}
 
-      {/* ADD PRODUCT MODAL */}
-      <Dialog
-        open={openProductDialog}
-        onClose={() => setOpenProductDialog(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Add New Product</DialogTitle>
-        <DialogContent>
-          <Typography color="text.secondary" mb={2}>
-            Upload image and product details
-          </Typography>
+      <Dialog open={openForm} onClose={resetForm} maxWidth="md" fullWidth>
 
-          <Stack spacing={2}>
-            {/* IMAGE UPLOAD */}
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar
-                variant="rounded"
-                src={product.imagePreview}
-                sx={{ width: 80, height: 80 }}
+        <DialogTitle>
+          {editingId ? "Edit Product" : "Add New Product"}
+        </DialogTitle>
+
+        <DialogContent>
+
+          <Stack spacing={2} mt={2}>
+
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="Product Name"
+                fullWidth
+                value={form.name}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
+              />
+
+              <TextField
+                label="Category"
+                fullWidth
+                value={form.category}
+                onChange={(e) =>
+                  setForm({ ...form, category: e.target.value })
+                }
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="SKU"
+                fullWidth
+                value={form.sku}
+                onChange={(e) =>
+                  setForm({ ...form, sku: e.target.value })
+                }
+              />
+
+              <TextField
+                label="BV (%)"
+                type="number"
+                fullWidth
+                value={form.bv}
+                onChange={(e) =>
+                  setForm({ ...form, bv: e.target.value })
+                }
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="DP"
+                type="number"
+                fullWidth
+                value={form.dp}
+                onChange={(e) =>
+                  setForm({ ...form, dp: e.target.value })
+                }
+              />
+
+              <TextField
+                label="MRP"
+                type="number"
+                fullWidth
+                value={form.mrp}
+                onChange={(e) =>
+                  setForm({ ...form, mrp: e.target.value })
+                }
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="Stock"
+                type="number"
+                fullWidth
+                value={form.stock}
+                onChange={(e) =>
+                  setForm({ ...form, stock: e.target.value })
+                }
+              />
+
+              <TextField
+                select
+                label="Status"
+                fullWidth
+                value={form.status}
+                onChange={(e) =>
+                  setForm({ ...form, status: e.target.value })
+                }
               >
-                <ImageIcon />
-              </Avatar>
-
-              <Button variant="outlined" component="label">
-                Upload Image
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Inactive">Inactive</MenuItem>
+              </TextField>
             </Stack>
 
             <TextField
-              label="Product Name"
-              fullWidth
-              value={product.name}
+              multiline
+              rows={3}
+              label="Description"
+              value={form.description}
               onChange={(e) =>
-                setProduct({ ...product, name: e.target.value })
+                setForm({ ...form, description: e.target.value })
               }
             />
 
-            <TextField
-              label="Price"
-              type="number"
-              fullWidth
-              value={product.price}
-              onChange={(e) =>
-                setProduct({ ...product, price: e.target.value })
-              }
-            />
+            {/* IMAGE UPLOAD */}
 
-            <TextField
-              select
-              label="Category"
-              fullWidth
-              value={product.category}
-              onChange={(e) =>
-                setProduct({ ...product, category: e.target.value })
-              }
-            >
-              {categories.map((cat) => (
-                <MenuItem key={cat} value={cat}>
-                  {cat}
-                </MenuItem>
+            <Button component="label" variant="outlined">
+              Upload Images
+              <input hidden type="file" multiple onChange={handleImages} />
+            </Button>
+
+            {/* IMAGE PREVIEW */}
+
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {form.images.map((img: string, index: number) => (
+                <Avatar
+                  key={index}
+                  src={img}
+                  variant="rounded"
+                  sx={{ width: 60, height: 60 }}
+                />
               ))}
-            </TextField>
+            </Stack>
+
           </Stack>
+
         </DialogContent>
 
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenProductDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={addProduct}>
-            Add Product
+        <DialogActions>
+          <Button onClick={resetForm}>Cancel</Button>
+          <Button variant="contained" onClick={saveProduct}>
+            Save
           </Button>
         </DialogActions>
+
       </Dialog>
+
+      {/* ================= VIEW PRODUCT ================= */}
+
+      <Dialog
+        open={openView}
+        onClose={() => setOpenView(false)}
+        maxWidth="md"
+        fullWidth
+      >
+
+        <DialogTitle>Product Details</DialogTitle>
+
+        <DialogContent>
+
+          {selectedProduct && (
+
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  md: "300px 1fr",
+                },
+                gap: 3,
+                mt: 2,
+              }}
+            >
+
+              {/* IMAGE SLIDER */}
+
+              <Box>
+
+                <Avatar
+                  src={selectedProduct.images[imageIndex]}
+                  variant="rounded"
+                  sx={{
+                    width: "100%",
+                    height: 250,
+                    mb: 2,
+                  }}
+                />
+
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+
+                  {selectedProduct.images.map((img, i) => (
+                    <Avatar
+                      key={i}
+                      src={img}
+                      variant="rounded"
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        cursor: "pointer",
+                        border:
+                          imageIndex === i
+                            ? "2px solid #1976d2"
+                            : "none",
+                      }}
+                      onClick={() => setImageIndex(i)}
+                    />
+                  ))}
+
+                </Stack>
+
+              </Box>
+
+              {/* DETAILS */}
+
+              <Stack spacing={1.5}>
+
+                <Typography variant="h6">
+                  {selectedProduct.name}
+                </Typography>
+
+                <Typography>
+                  <b>SKU:</b> {selectedProduct.sku}
+                </Typography>
+
+                <Typography>
+                  <b>Category:</b> {selectedProduct.category}
+                </Typography>
+
+                <Typography>
+                  <b>DP:</b> ₹ {selectedProduct.dp}
+                </Typography>
+
+                <Typography>
+                  <b>MRP:</b> ₹ {selectedProduct.mrp}
+                </Typography>
+
+                <Typography>
+                  <b>Stock:</b> {selectedProduct.stock}
+                </Typography>
+
+                <Typography>
+                  <b>BV:</b> {selectedProduct.bv}%
+                </Typography>
+
+                <Typography>
+                  <b>Status:</b> {selectedProduct.status}
+                </Typography>
+
+                <Typography mt={2}>
+                  <b>Description</b>
+                </Typography>
+
+                <Typography color="text.secondary">
+                  {selectedProduct.description}
+                </Typography>
+
+              </Stack>
+
+            </Box>
+
+          )}
+
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenView(false)}>Close</Button>
+        </DialogActions>
+
+      </Dialog>
+
     </Box>
   );
-};
-
-export default ProductManagement;
+}

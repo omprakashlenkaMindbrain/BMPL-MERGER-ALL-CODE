@@ -13,7 +13,7 @@ export const loginApi = async (data: { username: string; password: string }) => 
     const json = await res.json().catch(() => ({}));
 
     console.log(json);
-    
+
 
     if (!res.ok) {
       throw new Error(
@@ -34,27 +34,42 @@ export const loginApi = async (data: { username: string; password: string }) => 
 
 
 //admin logout api
-export const logoutApi=async()=>{
-    try{
-        const res=await fetch(`${BASE_URL}/v1/admin/logout`,{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json",
-            },
-            credentials:"include",
+export const logoutApi = async () => {
+  try {
+    let res = await fetch(`${BASE_URL}/v1/admin/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    //if status us 401 then handel the refresh token api
+    if (res.status === 401) {
+      try {
+        await refreshTokeApi();
+        res = await fetch(`${BASE_URL}/v1/admin/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
         });
-
-        const data=await res.json();
-
-        console.log();
-        
-        if(!res.ok){
-            throw new Error(data.msg || "Logout Failed");
-        }
-        return data;
-    }catch(err){
-        console.log("Logout error", err);
+      } catch (err) {
+        window.location.href = "/login";
+        throw new Error("Session expired");
+      }
     }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.msg || "Logout Failed");
+    }
+    return data;
+  } catch (err) {
+    console.log("Logout error", err);
+  }
 }
 
 

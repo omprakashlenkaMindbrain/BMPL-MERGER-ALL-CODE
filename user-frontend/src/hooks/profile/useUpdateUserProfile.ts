@@ -8,7 +8,6 @@ export const useUpdateUserProfile = () => {
         mutationFn: updateUserProfile,
 
         onSuccess: () => {
-            // refresh profile after update
             queryClient.invalidateQueries({
                 queryKey: ["user-profile"],
             });

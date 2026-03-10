@@ -1,12 +1,12 @@
 // src/App.tsx
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 import DateWiseUserIncome from "./components/IncomeComponent/DateWiseUserIncome";
 import Layout from "./components/layout/Layout";
 import PayoutHistoryByDate from "./components/PayoutComponent/PayoutHistoryByDate";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
-import InventoryManagement from "./pages/E-Commerce/InventoryManagement";
-import OrderManagement from "./pages/E-Commerce/OrderManagement";
+import CategoryManagement from "./pages/E-Commerce/CategoryManagement";
 import ProductManagement from "./pages/E-Commerce/ProductManagement";
 import Allincome from "./pages/Income/Allincome";
 import All from "./pages/Kyc/All";
@@ -17,13 +17,13 @@ import LoginPage from "./pages/LoginPage";
 import PackagesPage from "./pages/PackagesPage";
 import AllPayout from "./pages/Payout/AllPayout";
 import ProfilePage from "./pages/ProfilePage";
+import Rewards from "./pages/Rewards/Rewards";
 import IncomeComission from "./pages/Setting-Config/IncomeComission";
 import MailManagement from "./pages/Setting-Config/MailManagement";
 import RoyalityComission from "./pages/Setting-Config/RoyalityComission";
 import UserConfig from "./pages/Setting-Config/UserConfig";
 import UsersPage from "./pages/UsersPage";
-import Rewards from "./pages/Rewards/Rewards";
-import { Toaster } from "sonner"
+import OrdersManagement from "./pages/E-Commerce/OrdersManagement";
 
 function App() {
   return (
@@ -69,9 +69,9 @@ function App() {
               <Route path="/rewards" element={<Rewards />} />
 
               {/* E-Commerce management */}
+              <Route path="/e-commerce/category" element={<CategoryManagement />} />
               <Route path="/e-commerce/products" element={<ProductManagement />} />
-              <Route path="/e-commerce/orders" element={<OrderManagement />} />
-              <Route path="/e-commerce/inventory" element={<InventoryManagement />} />
+              <Route path="/e-commerce/orders" element={<OrdersManagement />} />
 
             </Route>
           </Route>

@@ -15,7 +15,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 // Icons
-import { CurrencyRupeeOutlined, PaymentOutlined } from "@mui/icons-material";
+import { CurrencyRupeeOutlined, PaymentOutlined, Storefront } from "@mui/icons-material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
@@ -107,27 +107,26 @@ const menuConfig: MenuConfig[] = [
     type: "item",
     name: "Payout",
     path: "/payout",
-    isNew: true,
     icon: <PaymentOutlined />
   },
-    {
+  {
     type: "item",
     name: "Rewards",
     path: "/rewards",
     isNew: true,
     icon: <Trophy />
   },
-  // {
-  //   type: "dropdown",
-  //   name: "E-Commerce Management",
-  //   icon: <StorefrontIcon />,
-  //   basePath: "/e-commerce",
-  //   children: [
-  //     { name: "Product Management", path: "/e-commerce/products" },
-  //     { name: "Order Management", path: "/e-commerce/orders" },
-  //     { name: "Inventory Management", path: "/e-commerce/inventory" },
-  //   ],
-  // },
+  {
+    type: "dropdown",
+    name: "E-Commerce Management",
+    icon: <Storefront />,
+    basePath: "/e-commerce",
+    children: [
+      { name: "Category Management", path: "/e-commerce/category", isNew: true },
+      { name: "Product Management", path: "/e-commerce/products", isNew: true },
+      { name: "Order Management", path: "/e-commerce/orders" },
+    ],
+  },
   {
     type: "dropdown",
     name: "Settings",
@@ -140,6 +139,7 @@ const menuConfig: MenuConfig[] = [
         path: "/settings/smtp",
         isNew: true, // ← NEW FEATURE
       },
+      { name: "Order Place", path: "/settings/order-place", isNew: true }
     ],
   },
 ];

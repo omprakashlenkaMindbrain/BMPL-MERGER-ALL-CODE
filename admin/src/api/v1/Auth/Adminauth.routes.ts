@@ -16,10 +16,9 @@ import express from "express";
 export const adminAuthRouter = express.Router();
 adminAuthRouter.post(
   "/register",
-  verifyAdmin,
-  isSuperAdmin,
+  // verifyAdmin,
+  // isSuperAdmin,
   validate(adminRegisterSchema),
-
   createAdmincontroller,
 );
 

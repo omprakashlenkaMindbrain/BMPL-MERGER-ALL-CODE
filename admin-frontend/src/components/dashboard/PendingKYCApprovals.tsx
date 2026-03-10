@@ -1,67 +1,90 @@
 import {
+  Box,
+  Button,
+  CircularProgress,
   Paper,
-  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Button,
-  Box,
+  Typography,
 } from "@mui/material";
 
-interface KYCData {
-  name: string;
-  package: string;
-  submitted: string;
-}
-
-const kycData: KYCData[] = [
-  { name: "Ramesh Gupta", package: "Silver", submitted: "2024-10-20" },
-  { name: "Priya Patel", package: "IBO", submitted: "2024-10-27" },
-  { name: "Amit Kumar", package: "Gold", submitted: "2024-10-26" },
-  { name: "Sanjay Mehta", package: "Silver", submitted: "2024-10-28" },
-];
+import { usePendingKyc } from "../../hooks/Kyc/usePendingKyc";
+import { useUpdateKycStatus } from "../../hooks/Kyc/useUpdateKycStatus";
 
 export default function PendingKYCApprovals() {
-  const handleApprove = (name: string) => {
-    console.log(`Approving KYC for ${name}`);
-    // Add your approve logic here
+  const { data, isLoading, isError } = usePendingKyc(1, 20);
+  const { mutate, isPending } = useUpdateKycStatus();
+
+  const handleApprove = (id: number) => {
+    mutate({
+      id,
+      action: "APPROVE",
+    });
   };
 
-  const handleReject = (name: string) => {
-    console.log(`Rejecting KYC for ${name}`);
-    // Add your reject logic here
+  const handleReject = (id: number) => {
+    mutate({
+      id,
+      action: "REJECT",
+      remark: "Rejected by admin",
+    });
   };
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return <Typography color="error">Failed to load KYC</Typography>;
+  }
+
+  const kycData = data?.data || [];
 
   return (
-    <Paper sx={{ p: 3, height: "100%", width: "100%" }}>
+    <Paper sx={{ p: 3, width: "100%" }}>
       <Typography variant="h6" fontWeight={600} mb={2}>
         Pending KYC Approvals
       </Typography>
+
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Package</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>User ID</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Aadhar No</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>PAN No</TableCell>
+              <TableCell sx={{ fontWeight: 600 }}>Bank</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Submitted</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Action</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
-            {kycData.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.package}</TableCell>
-                <TableCell>{row.submitted}</TableCell>
+            {kycData.map((row: any) => (
+              <TableRow key={row.id}>
+                <TableCell>{row.userId}</TableCell>
+                <TableCell>{row.aadharNo}</TableCell>
+                <TableCell>{row.panNo}</TableCell>
+                <TableCell>{row.bankName}</TableCell>
+                <TableCell>
+                  {new Date(row.createdAt).toLocaleDateString()}
+                </TableCell>
+
                 <TableCell>
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => handleApprove(row.name)}
+                      disabled={isPending}
+                      onClick={() => handleApprove(row.id)}
                       sx={{
                         backgroundColor: "#4caf50",
                         "&:hover": { backgroundColor: "#45a049" },
@@ -70,10 +93,12 @@ export default function PendingKYCApprovals() {
                     >
                       Approve
                     </Button>
+
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => handleReject(row.name)}
+                      disabled={isPending}
+                      onClick={() => handleReject(row.id)}
                       sx={{
                         backgroundColor: "#f44336",
                         "&:hover": { backgroundColor: "#da190b" },
@@ -86,6 +111,14 @@ export default function PendingKYCApprovals() {
                 </TableCell>
               </TableRow>
             ))}
+
+            {kycData.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  No pending KYC found
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
