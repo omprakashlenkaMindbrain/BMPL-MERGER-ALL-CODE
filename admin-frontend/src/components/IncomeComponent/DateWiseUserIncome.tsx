@@ -1,5 +1,6 @@
 import {
   Box,
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -9,7 +10,6 @@ import {
   TablePagination,
   TableRow,
   Typography,
-  CircularProgress,
 } from "@mui/material";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
@@ -27,6 +27,20 @@ function DateWiseUserIncome() {
     rowsPerPage
   );
 
+
+  const formatIndianDate = (dateString?: string) => {
+    if (!dateString) return "";
+
+    const dateObj = new Date(dateString);
+
+    return dateObj.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   const rows = data?.data?.data ?? [];
   const total = data?.data?.total ?? 0;
 
@@ -37,7 +51,7 @@ function DateWiseUserIncome() {
       </Typography>
 
       <Typography variant="body2" color="text.secondary" mb={2}>
-        Income details for date: <b>{date}</b>
+        Income details for date: <b>{formatIndianDate(date)}</b>
       </Typography>
 
       <TableContainer component={Paper}>
@@ -45,7 +59,7 @@ function DateWiseUserIncome() {
           <TableHead>
             <TableRow>
               <TableCell>Sl No</TableCell>
-              <TableCell>User ID</TableCell>
+              <TableCell>User Info</TableCell>
               <TableCell>Binary Income</TableCell>
               <TableCell>Royalty Income</TableCell>
               <TableCell>TDS</TableCell>
@@ -79,7 +93,14 @@ function DateWiseUserIncome() {
                     <TableCell>
                       {page * rowsPerPage + index + 1}
                     </TableCell>
-                    <TableCell>{row.userId}</TableCell>
+                    <TableCell>
+                      <Typography fontWeight={600}>
+                        {row.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {row.memId}
+                      </Typography>
+                    </TableCell>
                     <TableCell>{row.binaryIncome}</TableCell>
                     <TableCell>{row.royaltyIncome}</TableCell>
                     <TableCell>{row.totalTds}</TableCell>

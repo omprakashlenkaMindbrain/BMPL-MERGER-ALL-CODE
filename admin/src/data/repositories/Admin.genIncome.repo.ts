@@ -9,9 +9,9 @@ import {
 export const getIncomeGenarateRepo = async () => {
   const eligibleUsers = await elegibleForincome();
   const incomePercentage = await getIncomePercentage();
-  console.log("incomepercenatge is",incomePercentage)
+  console.log("incomepercenatge is", incomePercentage)
   const { tds, admincharges } = await getTDS();
-console.log(tds,admincharges)
+  console.log(tds, admincharges)
 
   const generateIncomeEntry = await prisma.generateIncome.create({
     data: {
@@ -32,10 +32,10 @@ console.log(tds,admincharges)
 
   for (const u of eligibleUsers) {
     const userId = u.user_id;
-     console.log("USER:", userId);
+    console.log("USER:", userId);
 
     const { leftBV, rightBV } = await getUserTotalBVRepo(userId);
-  console.log("BV:", leftBV, rightBV);
+    console.log("BV:", leftBV, rightBV);
     const wallet = await prisma.wallet.findUnique({
       where: { user_id: userId },
     });
@@ -51,13 +51,13 @@ console.log(tds,admincharges)
     console.log(matchedBv);
 
     if (matchedBv <= 0) continue;
-    
+
     const newLeftCarry = totalLeft - matchedBv;
     const newRightCarry = totalRight - matchedBv;
 
     const grossIncome = (matchedBv * incomePercentage) / 100;
     console.log(grossIncome)
-     if(grossIncome<=0)continue
+    if (grossIncome <= 0) continue
     const totalTds = (grossIncome * tds) / 100;
     const adminCharges = (grossIncome * admincharges) / 100;
 
@@ -178,6 +178,7 @@ export const genincomeGenrepo = async (page: number, limit: number) => {
 };
 export const incomeHistoryRepo = async (page: number, limit: number) => {
   const skip = (page - 1) * limit;
+
   const grouped = await prisma.incomeHistory.groupBy({
     by: ["userId", "incomeId"],
     _sum: {
@@ -212,9 +213,34 @@ export const incomeHistoryRepo = async (page: number, limit: number) => {
     merged[row.userId].totalAdminCharges += Number(row._sum.adminCharges ?? 0);
   }
 
+  const userIds = Object.keys(merged).map(Number);
+
+  const users = await prisma.user.findMany({
+    where: {
+      id: { in: userIds },
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      memberId: true,
+    },
+  });
+
+  const userMap: Record<number, any> = {};
+  users.forEach((u) => {
+    userMap[u.id] = u;
+  });
+
   const finalData = Object.values(merged).map((user: any) => ({
-    ...user,
+    userId: user.userId,
+    name: `${userMap[user.userId]?.firstName ?? ""} ${userMap[user.userId]?.lastName ?? ""}`.trim(),
+    memId: userMap[user.userId]?.memberId || null,
+    binaryIncome: user.binaryIncome,
+    royaltyIncome: user.royaltyIncome,
     totalIncome: user.binaryIncome + user.royaltyIncome,
+    totalTds: user.totalTds,
+    totalAdminCharges: user.totalAdminCharges,
   }));
 
   const paginatedData = finalData.slice(skip, skip + limit);
