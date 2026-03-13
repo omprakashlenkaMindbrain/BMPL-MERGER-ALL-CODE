@@ -105,7 +105,7 @@ const AgentDetailsPage: React.FC<Props> = ({
         <Paper sx={{ p: 1, mb: 3, borderRadius: "12px", background: "#F9FAFC" }}>
           <Box sx={{ display: "flex", width: "100%" }}>
             {(
-              ["overview", "kyc", "team", "earnings", "history"] as AgentTab[]
+              ["overview"] as AgentTab[]
             ).map((tab) => (
               <Button
                 key={tab}

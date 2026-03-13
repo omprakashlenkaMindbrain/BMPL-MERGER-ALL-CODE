@@ -282,7 +282,7 @@ const LandingPage = () => {
                                     <Button
                                         variant="contained"
                                         size="large"
-                                        onClick={() => navigate('/welcome')}
+                                        onClick={() => navigate('/login')}
                                         sx={{
                                             bgcolor: designConfig.colors.primary.main,
                                             fontSize: "1.1rem",

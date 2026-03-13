@@ -29,8 +29,6 @@ const Topbar = () => {
 
   // fetch admin
   const { data: adminData, isLoading } = useGetAdmin();
-  console.log(adminData);
-
 
   const handleLogout = () => {
     logoutMutate({}, {

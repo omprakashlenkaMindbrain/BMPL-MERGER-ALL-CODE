@@ -1,6 +1,11 @@
 import {
   Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Pagination,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -8,40 +13,45 @@ import {
   TableHead,
   TableRow,
   Typography,
-  CircularProgress,
-  Chip,
-  Button,
-  Stack,
-  Pagination,
 } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { usePayoutHistory } from "../../hooks/payout/usePayoutHistory";
 
+interface PayoutHistory {
+  id: number;
+  payoutId: number;
+  userId: number;
+  totalAmount: string;
+  tdsAmount: string;
+  adminCharges: string;
+  netAmount: string;
+  status: string;
+  createdAt: string;
+}
+
 function PayoutHistoryByDate() {
-  const { date } = useParams(); // payoutDate from route
+  const { date } = useParams();
   const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  // 🔹 fetch ALL payout history (paginated)
   const { data, isLoading } = usePayoutHistory(page, limit);
 
-  // 🔹 backend response shape
-  const historyData = data?.data?.data || [];
+  const historyData: PayoutHistory[] = data?.data?.data || [];
   const totalPages = data?.data?.totalpage || 1;
 
-  // 🔹 filter by selected date
+  console.log(historyData);
+
+  // Filter payouts by selected date
   const filteredPayouts = useMemo(() => {
     if (!date) return [];
 
     const selectedDate = new Date(date).toDateString();
 
-    return historyData.filter((item: any) => {
-      return (
-        new Date(item.payoutDate).toDateString() === selectedDate
-      );
+    return historyData.filter((item) => {
+      return new Date(item.createdAt).toDateString() === selectedDate;
     });
   }, [historyData, date]);
 
@@ -67,12 +77,10 @@ function PayoutHistoryByDate() {
         </Paper>
       )}
 
-      {/* EMPTY STATE */}
+      {/* EMPTY */}
       {!isLoading && filteredPayouts.length === 0 && (
         <Paper sx={{ p: 6 }}>
-          <Typography>
-            No payouts found for this date.
-          </Typography>
+          <Typography>No payouts found for this date.</Typography>
         </Paper>
       )}
 
@@ -85,7 +93,7 @@ function PayoutHistoryByDate() {
                 <TableRow>
                   <TableCell>Sl No</TableCell>
                   <TableCell>Payout Date</TableCell>
-                  <TableCell>Cycle</TableCell>
+                  <TableCell>Payout ID</TableCell>
                   <TableCell>Total Amount</TableCell>
                   <TableCell>TDS</TableCell>
                   <TableCell>Admin Charges</TableCell>
@@ -95,17 +103,32 @@ function PayoutHistoryByDate() {
               </TableHead>
 
               <TableBody>
-                {filteredPayouts.map((row: any, index: number) => (
+                {filteredPayouts.map((row, index) => (
                   <TableRow key={row.id} hover>
                     <TableCell>{index + 1}</TableCell>
+
                     <TableCell>
-                      {new Date(row.payoutDate).toLocaleString()}
+                      {new Date(row.createdAt).toLocaleString()}
                     </TableCell>
-                    <TableCell>{row.payoutCycle}</TableCell>
-                    <TableCell>₹{row.totalAmount}</TableCell>
-                    <TableCell>₹{row.tds}</TableCell>
-                    <TableCell>₹{row.adminCharges}</TableCell>
-                    <TableCell>₹{row.netAmount}</TableCell>
+
+                    <TableCell>{row.payoutId}</TableCell>
+
+                    <TableCell>
+                      ₹{Number(row.totalAmount).toFixed(2)}
+                    </TableCell>
+
+                    <TableCell>
+                      ₹{Number(row.tdsAmount).toFixed(2)}
+                    </TableCell>
+
+                    <TableCell>
+                      ₹{Number(row.adminCharges).toFixed(2)}
+                    </TableCell>
+
+                    <TableCell>
+                      ₹{Number(row.netAmount).toFixed(2)}
+                    </TableCell>
+
                     <TableCell>
                       <Chip
                         label={row.status}

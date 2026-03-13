@@ -17,6 +17,7 @@ planPurchaseRouter.post(
   planPurchaseController.createPlanPurchase,
 );
 
+// console.log("route is being hit")
 planPurchaseRouter.get(
   "/my-purchases",
   planPurchaseController.getPurchasesByUser,

@@ -88,6 +88,7 @@ export const getPurchasesByUser = async (
 
     const userId = res.locals.user.id;
 
+    console.log("controller is being hit")
     const purchases =
       await planPurchaseService.getPurchasesByUser(userId);
 

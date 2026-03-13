@@ -128,6 +128,7 @@ export const getPlanPurchaseById = async (id: number) => {
 };
 
 export const getPurchasesByUser = async (userId: number) => {
+  console.log("Serivce is being hit")
   const purchases = await planPurchaseRepo.findByUserId(userId);
 
   const firstPurchasePending = purchases.find(

@@ -221,6 +221,27 @@ const Signup = () => {
             >
                 {isPending ? <CircularProgress size={24} /> : "Sign Up"}
             </Button>
+            {/* New User */}
+            <Typography
+                variant="body2"
+                sx={{
+                    mt: 2,
+                    textAlign: "center",
+                    color: designConfig.colors.text.primary,
+                }}
+            >
+               Alredy Have an account?{" "}
+                <span
+                    style={{
+                        color: designConfig.colors.primary.main,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                    }}
+                    onClick={() => navigate("/login")}
+                >
+                    Signin
+                </span>
+            </Typography>
         </AuthLayout>
     );
 };

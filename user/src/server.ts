@@ -32,7 +32,7 @@ export const createServer = () => {
     .use(express.json())
     .use(
       cors({
-        origin: "http://localhost:5173",
+        origin: "http://localhost:5174",
         credentials: true, // if you are using cookies / auth headers
       }),
     )

@@ -8,14 +8,15 @@ interface PurchasePayload {
     plan_amount: number;
     payment_mode: string;
     payment_proof_uri: string;
-    is_income_generated: "YES" | "NO";
-    purchase_type: "FIRST_PURCHASE" | "SHARE_PURCHASE | REPURCHASE";
+    // is_income_generated: "YES" | "NO";
+    purchase_type: "FIRST_PURCHASE" | "REPURCHASE" | "SHARE_PURCHASE";
     plan_id: string;
 }
 
 export const usePurchasePlan = () => {
     return useMutation({
         mutationFn: async (payload: PurchasePayload) => {
+            console.log(payload)
             let res = await fetch(
                 `${BASE_URL}/v1/planpurchase`,
                 {
@@ -50,8 +51,10 @@ export const usePurchasePlan = () => {
                 throw new Error(err?.message || "Plan purchase failed");
             }
             
+            
 
             return res.json();
         },
+
     });
 };

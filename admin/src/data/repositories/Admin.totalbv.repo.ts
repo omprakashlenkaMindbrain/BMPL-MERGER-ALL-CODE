@@ -3,21 +3,25 @@ import { BVLedger } from "@prisma/client";
 
 // Total Left/Right BV
 export const getUserTotalBVRepo = async (userId: number) => {
-  const result = await prisma.bVLedger.groupBy({
-    by: ["buyer_leg"],
-    where: {
-      user_id: userId,
-      buyer_leg: { in: ["LEFT", "RIGHT"] },
+  const rows = await prisma.bVLedger.findMany({
+    where: { user_id: userId },
+    select: {
+      buyer_leg: true,
+      bv: true,
     },
-    _sum: { bv: true },
   });
 
   let leftBV = 0;
   let rightBV = 0;
 
-  for (const r of result) {
-    if (r.buyer_leg === "LEFT") leftBV = Number(r._sum?.bv ?? 0);
-    if (r.buyer_leg === "RIGHT") rightBV = Number(r._sum?.bv ?? 0);
+  for (const r of rows) {
+    if (r.buyer_leg === "LEFT") {
+      leftBV += Number(r.bv);
+    }
+
+    if (r.buyer_leg === "RIGHT") {
+      rightBV += Number(r.bv);
+    }
   }
 
   return { leftBV, rightBV };

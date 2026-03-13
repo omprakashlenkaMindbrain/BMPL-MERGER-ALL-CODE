@@ -1,31 +1,31 @@
-import { useState } from "react";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import {
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  CircularProgress,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Stack,
   Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControl,
   InputLabel,
-  Select,
   MenuItem,
-  Divider,
+  Select,
+  Stack,
+  Typography,
 } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useState } from "react";
 
 import { usePlan } from "../../hooks/plan/useGetAllplans";
 import { usePurchasePlan } from "../../hooks/plan/usePurchasePlan";
 import { usePurchasesByUser } from "../../hooks/plan/usePurchasesByUser";
 
-import type { Plan } from "../../hooks/plan/useGetAllplans";
 import { toast } from "sonner";
+import type { Plan } from "../../hooks/plan/useGetAllplans";
 
 /* ===================== TYPES ===================== */
 type PurchaseType = "FIRST_PURCHASE" | "REPURCHASE" | "SHARE_PURCHASE" | "";
@@ -36,8 +36,11 @@ export default function PlanPage() {
   const { mutate, isPending } = usePurchasePlan();
   const { data: purchaseData } = usePurchasesByUser();
 
-  const hasPurchasedBefore = (purchaseData?.purchases?.length ?? 0) > 0;
+  const hasPurchasedBefore =
+    (purchaseData?.data?.purchases?.length ?? 0) > 0;
 
+  const showPurchaseTypeDropdown =
+    purchaseData?.data?.purchaseFlow?.showPurchaseTypeDropdown ?? false;
   /* ===================== STATE ===================== */
   const [open, setOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -94,7 +97,7 @@ export default function PlanPage() {
         plan_amount: selectedPlan.price,
         payment_mode: paymentType,
         payment_proof_uri: proofUrl,
-        is_income_generated: "NO",
+        // is_income_generated: "NO",
         purchase_type: hasPurchasedBefore ? purchaseType : "FIRST_PURCHASE",
         plan_id: String(selectedPlan.id),
       },
@@ -147,11 +150,10 @@ export default function PlanPage() {
               borderRadius: 4,
               display: "flex",
               flexDirection: "column",
-              // Fixed widths for responsiveness without Grid
               width: {
-                xs: "100%", // Mobile
-                sm: "calc(50% - 12px)", // 2 cards (accounting for gap)
-                md: "calc(33.333% - 20px)", // 3 cards
+                xs: "100%",
+                sm: "calc(50% - 12px)",
+                md: "calc(33.333% - 20px)",
               },
               boxShadow: "0 8px 24px rgba(0,0,0,0.05)",
             }}
@@ -164,38 +166,63 @@ export default function PlanPage() {
                 color: "#fff",
               }}
             >
-              <Typography variant="h6" fontWeight={600}>{plan.planName}</Typography>
-              <Typography variant="h4" fontWeight={800}>₹{plan.price}</Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>BV: {plan.BV}</Typography>
+              <Typography variant="h6" fontWeight={600}>
+                {plan.planName}
+              </Typography>
+
+              <Typography variant="h4" fontWeight={800}>
+                ₹{plan.price}
+              </Typography>
+
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                BV: {plan.BV}
+              </Typography>
             </Box>
 
             {/* CARD BODY */}
             <CardContent
               sx={{
-                flexGrow: 1, // Fills available space
+                flexGrow: 1,
                 display: "flex",
                 flexDirection: "column",
               }}
             >
+              {/* DESCRIPTION */}
               <Typography
                 color="text.secondary"
                 sx={{
                   mb: 2,
-                  // LINE CLAMP LOGIC: Wraps and breaks at 3 lines
                   display: "-webkit-box",
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  minHeight: "4.5em", // Optional: maintains spacing even if text is short
+                  minHeight: "4.5em",
                 }}
               >
                 {plan.Description}
               </Typography>
 
-              {/* STICKY BOTTOM SECTION */}
+              {/* FEATURES */}
+              <Box sx={{ mb: 2 }}>
+                {plan.features.map((feature:any, index:any) => (
+                  <Stack
+                    key={index}
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ mb: 0.5 }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 18, color: "#2e7d32" }} />
+                    <Typography variant="body2">{feature}</Typography>
+                  </Stack>
+                ))}
+              </Box>
+
+              {/* STICKY FOOTER */}
               <Box sx={{ mt: "auto" }}>
                 <Divider sx={{ mb: 2 }} />
+
                 <Typography variant="body1">
                   <strong>DP:</strong> ₹{plan.dp_amount}
                 </Typography>
@@ -204,9 +231,11 @@ export default function PlanPage() {
                   <CheckCircleIcon
                     sx={{
                       fontSize: 20,
-                      color: plan.status === "ACTIVE" ? "#2e7d32" : "#d32f2f",
+                      color:
+                        plan.status === "ACTIVE" ? "#2e7d32" : "#d32f2f",
                     }}
                   />
+
                   <Typography variant="body2" fontWeight={700}>
                     {plan.status}
                   </Typography>
@@ -256,7 +285,7 @@ export default function PlanPage() {
 
               <Divider />
 
-              {hasPurchasedBefore && (
+              {showPurchaseTypeDropdown && (
                 <FormControl fullWidth>
                   <InputLabel>Purchase Type</InputLabel>
                   <Select

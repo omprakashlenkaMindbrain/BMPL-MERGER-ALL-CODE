@@ -10,6 +10,7 @@ export const create = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
+    // console.log("Api is in the controller ");
     const user = await userService.createUser(req.body);
 
     res.status(201).json({

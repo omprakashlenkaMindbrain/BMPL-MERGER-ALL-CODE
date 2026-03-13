@@ -1,14 +1,15 @@
-import bcrypt from "bcryptjs";
-import AppError from "../errors/AppError";
-import * as userRepository from "../data/repositories/Users.Repository";
-import * as userhelperRepository from "../data/repositories/UserHelper.Repository";
 import { generateMemberId } from "@/utils/genMemId";
+import bcrypt from "bcryptjs";
+import * as userhelperRepository from "../data/repositories/UserHelper.Repository";
+import * as userRepository from "../data/repositories/Users.Repository";
 import * as userTreeClosure from "../data/repositories/UserTreeClosure.Repository";
+import AppError from "../errors/AppError";
 import { consumeSharePurchase } from "./planPurchase/consumeSharedPurchase.useCase";
 import { reserveSharePurchase } from "./planPurchase/ReservePurchase.useCase";
 
 export const createUser = async (data: any) => {
   return userRepository.runInTransaction(async (tx) => {
+    // console.log("Api is being hit in the services")
     if (!data.email) {
       throw AppError.badRequest("Email is required");
     }

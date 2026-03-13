@@ -6,11 +6,12 @@ import {
   getTDS,
   getWalletCarryBV,
 } from "@/utils/incomeHelper";
-
 export const getIncomeGenarateRepo = async () => {
   const eligibleUsers = await elegibleForincome();
   const incomePercentage = await getIncomePercentage();
+  console.log("incomepercenatge is",incomePercentage)
   const { tds, admincharges } = await getTDS();
+console.log(tds,admincharges)
 
   const generateIncomeEntry = await prisma.generateIncome.create({
     data: {
@@ -31,24 +32,38 @@ export const getIncomeGenarateRepo = async () => {
 
   for (const u of eligibleUsers) {
     const userId = u.user_id;
+     console.log("USER:", userId);
 
     const { leftBV, rightBV } = await getUserTotalBVRepo(userId);
-    const { leftCarry, rightCarry } = await getWalletCarryBV(userId);
+  console.log("BV:", leftBV, rightBV);
+    const wallet = await prisma.wallet.findUnique({
+      where: { user_id: userId },
+    });
+
+    const leftCarry = wallet?.left_carryforward_bv || 0;
+    const rightCarry = wallet?.right_carryforward_bv || 0;
 
     const totalLeft = leftBV + leftCarry;
     const totalRight = rightBV + rightCarry;
 
     const matchedBv = Math.min(totalLeft, totalRight);
-    if (matchedBv <= 0) continue;
 
+    console.log(matchedBv);
+
+    if (matchedBv <= 0) continue;
+    
     const newLeftCarry = totalLeft - matchedBv;
     const newRightCarry = totalRight - matchedBv;
 
     const grossIncome = (matchedBv * incomePercentage) / 100;
-
+    console.log(grossIncome)
+     if(grossIncome<=0)continue
     const totalTds = (grossIncome * tds) / 100;
     const adminCharges = (grossIncome * admincharges) / 100;
+
     const netIncome = grossIncome - totalTds - adminCharges;
+
+    console.log(netIncome);
 
     totalIncome += grossIncome;
     totaltds += totalTds;
@@ -77,15 +92,24 @@ export const getIncomeGenarateRepo = async () => {
         },
       });
 
-      await tx.wallet.update({
+      await tx.wallet.upsert({
         where: { user_id: userId },
-        data: {
+        update: {
           total_left_bv: leftBV,
           total_right_bv: rightBV,
           left_carryforward_bv: newLeftCarry,
           right_carryforward_bv: newRightCarry,
           matched_bv: { increment: matchedBv },
           total_income: { increment: netIncome },
+        },
+        create: {
+          user_id: userId,
+          total_left_bv: leftBV,
+          total_right_bv: rightBV,
+          left_carryforward_bv: newLeftCarry,
+          right_carryforward_bv: newRightCarry,
+          matched_bv: matchedBv,
+          total_income: netIncome,
         },
       });
 
@@ -106,7 +130,9 @@ export const getIncomeGenarateRepo = async () => {
           status: "APPROVED",
           is_income_generated: "NO",
         },
-        data: { is_income_generated: "YES" },
+        data: {
+          is_income_generated: "YES",
+        },
       });
     });
 
